@@ -46,7 +46,7 @@
     const dataParam = getParameterByName('data');
     if (dataParam) {
         try {
-            const jData = dataParam.split('@').map(e=>parseFloat(e)); // Decode and parse JSON
+            const jData = dataParam.split('@').map(e => parseFloat(e)); // Decode and parse JSON
 
             // Create an array of marker coordinates
             const jsonData = [];
@@ -57,8 +57,26 @@
             }
 
             // Add markers to the map
-            jsonData.forEach(({ lat, lon }) => {
-                L.marker([lat, lon]).addTo(map)
+            jsonData.forEach(({ lat, lon }, i) => {
+                const marker = (i === 0) 
+                    ? L.marker([lat, lon], {
+						icon: L.icon({
+							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png', // Replace with a valid red marker image URL
+							iconSize: [25, 41], // Size of the icon
+							iconAnchor: [12, 41], // Anchor point of the icon
+							popupAnchor: [1, -34], // Popup anchor point
+						})
+					}) // Use red icon for the first marker
+                    : L.marker([lat, lon], {
+						icon: L.icon({
+							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png', // Replace with a valid red marker image URL
+							iconSize: [25, 41], // Size of the icon
+							iconAnchor: [12, 41], // Anchor point of the icon
+							popupAnchor: [1, -34], // Popup anchor point
+						})
+					}); // Use default icon for other markers
+
+                marker.addTo(map)
                     .bindPopup(`Lat: ${lat}, Lon: ${lon}`);
             });
 
