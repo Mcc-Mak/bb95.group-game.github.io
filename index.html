@@ -38,6 +38,7 @@
     // Get and decode the data parameter
     const dataParam = getParameterByName('data');
     if (dataParam) {
+		window.e = dataParam;
         const jsonData = JSON.parse(atob(dataParam)); // Decode and parse JSON
 
         // Add markers to the map
