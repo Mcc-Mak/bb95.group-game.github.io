@@ -46,7 +46,7 @@
     const dataParam = getParameterByName('data');
     if (dataParam) {
         try {
-            const jData = JSON.parse(dataParam); // Decode and parse JSON
+            const jData = dataParam.split('@').map(e=>parseFloat(e)); // Decode and parse JSON
 
             // Create an array of marker coordinates
             const jsonData = [];
