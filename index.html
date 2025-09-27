@@ -3,16 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiple Markers on OpenStreetMap</title>
+    <title>OpenStreetMap with Multiple Markers</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body { margin: 0; }
-        #map { height: 600px; width: 100%; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: 100vh;
+            width: 100vw;
+        }
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
 
-<h1>OpenStreetMap with Multiple Markers</h1>
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -27,32 +36,39 @@
 
     // Function to get URL parameters
     function getParameterByName(name, url = window.location.href) {
-        name = name.replace(/[[]]/g, '\\$&');
-        const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-              results = regex.exec(url);
+        const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+        const results = regex.exec(url);
         if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        return results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : '';
     }
 
     // Get and decode the data parameter
     const dataParam = getParameterByName('data');
     if (dataParam) {
-		window.e = dataParam;
-        const jsonData = JSON.parse(atob(dataParam)); // Decode and parse JSON
+        try {
+            const jData = JSON.parse(atob(dataParam)); // Decode and parse JSON
 
-        // Add markers to the map
-        jsonData.forEach(coords => {
-            const lat = coords.lat;
-            const lon = coords.lon;
-			console.log(lat,lon)
-            L.marker([lat, lon]).addTo(map)
-                .bindPopup(`Lat: ${lat}, Lon: ${lon}`);
-        });
+            // Create an array of marker coordinates
+            const jsonData = [];
+            for (let i = 0; i < jData.length; i += 2) {
+                if (i + 1 < jData.length) {
+                    jsonData.push({ lat: jData[i], lon: jData[i + 1] });
+                }
+            }
 
-        // Adjust view to fit all markers
-        const bounds = jsonData.map(coords => [coords.lat, coords.lon]);
-        map.fitBounds(bounds);
+            // Add markers to the map
+            jsonData.forEach(({ lat, lon }) => {
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup(`Lat: ${lat}, Lon: ${lon}`);
+            });
+
+            // Adjust view to fit all markers
+            const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
+            map.fitBounds(bounds);
+        } catch (error) {
+            console.error('Error parsing data parameter:', error);
+            alert('Invalid data format. Please provide valid Base64 encoded coordinates.');
+        }
     }
 </script>
 
