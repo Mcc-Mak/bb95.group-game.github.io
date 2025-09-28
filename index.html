@@ -74,19 +74,20 @@
 						})
 					})
             };
-
+            
+            let marker;
             // Add markers to the map
             jsonData.forEach(({ lat, lon }, i) => {
                 if (i===0) {
-                    const marker = markerOptions.user;
+                    marker = markerOptions.user;
                 } else {
                     if(jsonData.length==1) {
-                        const marker = markerOptions.treasure;
+                        marker = markerOptions.treasure;
                     } else {
-                        const marker = markerOptions.user;
+                        marker = markerOptions.user;
                     }
                 }
-                
+    
                 marker.addTo(map)
                 //     .bindPopup(`Lat: ${lat}, Lon: ${lon}`);
             });
