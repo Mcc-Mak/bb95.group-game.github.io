@@ -57,7 +57,7 @@
             }
             
             const markerOptions = {
-                treasure: L.marker([lat, lon], {
+                treasure: (lat, lon) => L.marker([lat, lon], {
 						icon: L.icon({
 							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png', // Replace with a valid red marker image URL
 							iconSize: [41, 41], // Size of the icon
@@ -65,7 +65,7 @@
 							// popupAnchor: [1, -34], // Popup anchor point
 						})
 					}),
-                user: L.marker([lat, lon], {
+                user: (lat, lon) => L.marker([lat, lon], {
 						icon: L.icon({
 							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png', // Replace with a valid red marker image URL
 							iconSize: [41, 41], // Size of the icon
@@ -79,12 +79,12 @@
             // Add markers to the map
             jsonData.forEach(({ lat, lon }, i) => {
                 if (i===0) {
-                    marker = markerOptions.user;
+                    marker = markerOptions.user(lat, lon);
                 } else {
                     if(jsonData.length==1) {
-                        marker = markerOptions.treasure;
+                        marker = markerOptions.treasure(lat, lon);
                     } else {
-                        marker = markerOptions.user;
+                        marker = markerOptions.user(lat, lon);
                     }
                 }
     
