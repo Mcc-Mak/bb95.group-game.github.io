@@ -55,27 +55,38 @@
                     jsonData.push({ lat: jData[i], lon: jData[i + 1] });
                 }
             }
-
-            // Add markers to the map
-            jsonData.forEach(({ lat, lon }, i) => {
-                const marker = (i === 0) 
-                    ? L.marker([lat, lon], {
-						icon: L.icon({
-							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png', // Replace with a valid red marker image URL
-							iconSize: [41, 41], // Size of the icon
-							// iconAnchor: [20.5, 20.5], // Anchor point of the icon
-							// popupAnchor: [1, -34], // Popup anchor point
-						})
-					}) // Use red icon for the first marker
-                    : L.marker([lat, lon], {
+            
+            const markerOptions = {
+                treasure: L.marker([lat, lon], {
 						icon: L.icon({
 							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png', // Replace with a valid red marker image URL
 							iconSize: [41, 41], // Size of the icon
 							// iconAnchor: [20.5, 20.5], // Anchor point of the icon
 							// popupAnchor: [1, -34], // Popup anchor point
 						})
-					}); // Use default icon for other markers
+					}),
+                user: L.marker([lat, lon], {
+						icon: L.icon({
+							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png', // Replace with a valid red marker image URL
+							iconSize: [41, 41], // Size of the icon
+							// iconAnchor: [20.5, 20.5], // Anchor point of the icon
+							// popupAnchor: [1, -34], // Popup anchor point
+						})
+					})
+            };
 
+            // Add markers to the map
+            jsonData.forEach(({ lat, lon }, i) => {
+                if (i===0) {
+                    const marker = markerOptions.user;
+                } else {
+                    if(jsonData.length==1) {
+                        const marker = markerOptions.treasure;
+                    } else {
+                        const marker = markerOptions.user;
+                    }
+                }
+                
                 marker.addTo(map)
                 //     .bindPopup(`Lat: ${lat}, Lon: ${lon}`);
             });
