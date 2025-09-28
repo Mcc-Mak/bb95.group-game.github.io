@@ -78,7 +78,8 @@
             // Add markers to the map
             jsonData.forEach(({ lat, lon }, i) => {
                 let marker;
-                if (Object.values(jsonData).length == 1) {
+                alert(jData);
+                if (jData.length == 2) {
                     marker = markerOptions.treasure(lat, lon);
                 } else {
                     if(i === 0) {
