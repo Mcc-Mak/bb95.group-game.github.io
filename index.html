@@ -95,6 +95,9 @@
             // Adjust view to fit all markers
             const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
             map.fitBounds(bounds);
+
+			// Miscellaneous
+			document.querySelector('.leaflet-bottom.leaflet-right').innerHTML = "";
         } catch (error) {
             console.error('Error parsing data parameter:', error);
             alert('Invalid data format. Please provide valid Base64 encoded coordinates.');
