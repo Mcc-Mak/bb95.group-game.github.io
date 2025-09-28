@@ -75,9 +75,9 @@
 					})
             };
             
-            let marker;
             // Add markers to the map
             jsonData.forEach(({ lat, lon }, i) => {
+                let marker;
                 if (i===0) {
                     marker = markerOptions.user(lat, lon);
                 } else {
