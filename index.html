@@ -44,6 +44,9 @@
 
     // Get and decode the data parameter
     const dataParam = getParameterByName('data');
+    const typeParam = getParameterByName('type'); // Get the type parameter
+    const isSpy = typeParam === 'spy'; // Check if type is 'spy'
+
     if (dataParam) {
         try {
             const jData = dataParam.split('@').map(e => parseFloat(e)); // Decode and parse JSON
@@ -58,46 +61,50 @@
             
             const markerOptions = {
                 treasure: (lat, lon) => L.marker([lat, lon], {
-						icon: L.icon({
-							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png', // Replace with a valid red marker image URL
-							iconSize: [60, 60], // Size of the icon
-							// iconAnchor: [20.5, 20.5], // Anchor point of the icon
-							// popupAnchor: [1, -34], // Popup anchor point
-						})
-					}),
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png',
+                        iconSize: [60, 60],
+                    })
+                }),
                 user: (lat, lon) => L.marker([lat, lon], {
-						icon: L.icon({
-							iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png', // Replace with a valid red marker image URL
-							iconSize: [41, 41], // Size of the icon
-							// iconAnchor: [20.5, 20.5], // Anchor point of the icon
-							// popupAnchor: [1, -34], // Popup anchor point
-						})
-					})
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png',
+                        iconSize: [41, 41],
+                    })
+                }),
+                opponent: (lat, lon) => L.marker([lat, lon], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/ShadowPosition.png',
+                        iconSize: [41, 41],
+                    })
+                }),
             };
             
             // Add markers to the map
             jsonData.forEach(({ lat, lon }, i) => {
                 let marker;
-                if (jData.length == 2) {
-                    marker = markerOptions.treasure(lat, lon);
-                } else {
-                    if(i === 0) {
-                        marker = markerOptions.user(lat, lon);
-                    } else {
-                        marker = markerOptions.treasure(lat, lon);
-                    }
-                }
-    
-                marker.addTo(map)
-                //     .bindPopup(`Lat: ${lat}, Lon: ${lon}`);
+				if (isSpy) {
+					marker = markerOptions.opponent(lat, lon);
+				} else {
+	                if (jData.length == 2) {
+	                    marker = markerOptions.treasure(lat, lon);
+	                } else {
+	                    if(i === 0) {
+	                        marker = markerOptions.user(lat, lon);
+	                    } else {
+	                        marker = markerOptions.treasure(lat, lon);
+	                    }
+	                }	
+				}
+                marker.addTo(map);
             });
 
             // Adjust view to fit all markers
             const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
             map.fitBounds(bounds);
 
-			// Miscellaneous
-			document.querySelector('.leaflet-bottom.leaflet-right').innerHTML = "";
+            // Miscellaneous
+            document.querySelector('.leaflet-bottom.leaflet-right').innerHTML = "";
         } catch (error) {
             console.error('Error parsing data parameter:', error);
             alert('Invalid data format. Please provide valid Base64 encoded coordinates.');
