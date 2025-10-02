@@ -31,7 +31,7 @@
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
+        maxZoom: 24,
     }).addTo(map);
 
     // Function to get URL parameters
@@ -42,23 +42,22 @@
         return results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : '';
     }
 
-    // Get and decode the data parameter
+    // Get parameters
     const dataParam = getParameterByName('data');
-    const typeParam = getParameterByName('type'); // Get the type parameter
-    const isSpy = typeParam === 'spy'; // Check if type is 'spy'
+    const typeParam = getParameterByName('type'); 
+    const isSpy = typeParam === 'spy'; 
 
     if (dataParam) {
         try {
-            const jData = dataParam.split('@').map(e => parseFloat(e)); // Decode and parse JSON
+            const jData = dataParam.split('@').map(e => parseFloat(e));
+            if (jData.length % 2 !== 0) throw new Error("Invalid number of coordinates");
 
             // Create an array of marker coordinates
             const jsonData = [];
             for (let i = 0; i < jData.length; i += 2) {
-                if (i + 1 < jData.length) {
-                    jsonData.push({ lat: jData[i], lon: jData[i + 1] });
-                }
+                jsonData.push({ lat: jData[i], lon: jData[i + 1] });
             }
-            
+
             const markerOptions = {
                 treasure: (lat, lon) => L.marker([lat, lon], {
                     icon: L.icon({
@@ -79,36 +78,34 @@
                     })
                 }),
             };
-            
+
             // Add markers to the map
             jsonData.forEach(({ lat, lon }, i) => {
                 let marker;
-				if (isSpy) {
-					marker = markerOptions.opponent(lat, lon);
-				} else {
-	                if (jData.length == 2) {
-	                    marker = markerOptions.treasure(lat, lon);
-	                } else {
-	                    if(i === 0) {
-	                        marker = markerOptions.user(lat, lon);
-	                    } else {
-	                        marker = markerOptions.treasure(lat, lon);
-	                    }
-	                }	
-				}
-                marker.addTo(map);
+                if (isSpy) {
+                    marker = markerOptions.opponent(lat, lon);
+                } else {
+                    if (jData.length == 2) {
+                        marker = markerOptions.treasure(lat, lon);
+                    } else {
+                        marker = (i === 0) ? markerOptions.user(lat, lon) : markerOptions.treasure(lat, lon);
+                    }
+                }
+                marker.addTo(map).bindPopup(`Marker ${i + 1}: ${marker.options.icon.options.iconUrl}`);
             });
 
             // Adjust view to fit all markers
             const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
             map.fitBounds(bounds);
 
-            // Miscellaneous
+            // Clear any existing info
             document.querySelector('.leaflet-bottom.leaflet-right').innerHTML = "";
         } catch (error) {
             console.error('Error parsing data parameter:', error);
-            alert('Invalid data format. Please provide valid Base64 encoded coordinates.');
+            alert('Invalid data format. Please provide valid coordinates.');
         }
+    } else {
+        alert('No data parameter provided.');
     }
 </script>
 
