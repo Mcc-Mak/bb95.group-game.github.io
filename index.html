@@ -27,79 +27,87 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
     // Initialize the map
-    const map = L.map('map').setView([22.362891, 114.050456], 14); // Default center
-
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 24,
-    }).addTo(map);
+    const map = L.map('map').setView([22.362891, 114.050456], 14);
 
     // Function to get URL parameters
-    function getParameterByName(name, url = window.location.href) {
+    function getParameterByName(name) {
         const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-        const results = regex.exec(url);
-        if (!results) return null;
-        return results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : '';
+        const results = regex.exec(window.location.href);
+        return results ? (results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : '') : null;
     }
 
     // Get parameters
     const dataParam = getParameterByName('data');
-    const typeParam = getParameterByName('type'); 
+    const typeParam = getParameterByName('type');
+    const tileParam = getParameterByName('tile');
     const isSpy = typeParam === 'spy'; 
+
+    // Tile layer selection
+    const tileOptions = {
+        cartocdn: {
+            url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+            maxZoom: 24,
+        },
+        osm: {
+            url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            maxZoom: 24,
+        },
+        default: {
+            url: "https://2.aerial.maps.ls.hereapi.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?app_id=eAdkWGYRoc4RfxVo0Z4B&app_code=TrLJuXVK62IQk0vuXFzaig&lg=eng",
+            maxZoom: 20,
+        }
+    };
+
+    const selectedTile = tileOptions[tileParam] || tileOptions.default;
+
+    // Add tile layer to the map
+    L.tileLayer(selectedTile.url, { maxZoom: selectedTile.maxZoom }).addTo(map);
+
+    // Function to create markers
+    const createMarker = (lat, lon, type) => {
+        const icons = {
+            treasure: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png',
+            user: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png',
+            opponent: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/ShadowPosition.png',
+        };
+        return L.marker([lat, lon], {
+            icon: L.icon({
+                iconUrl: icons[type],
+                iconSize: type === 'treasure' ? [30, 30] : [20, 20],
+            })
+        });
+    };
 
     if (dataParam) {
         try {
-            const jData = dataParam.split('@').map(e => parseFloat(e));
+            const jData = dataParam.split('@').map(Number);
             if (jData.length % 2 !== 0) throw new Error("Invalid number of coordinates");
 
-            // Create an array of marker coordinates
             const jsonData = [];
             for (let i = 0; i < jData.length; i += 2) {
                 jsonData.push({ lat: jData[i], lon: jData[i + 1] });
             }
 
-            const markerOptions = {
-                treasure: (lat, lon) => L.marker([lat, lon], {
-                    icon: L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png',
-                        iconSize: [60, 60],
-                    })
-                }),
-                user: (lat, lon) => L.marker([lat, lon], {
-                    icon: L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png',
-                        iconSize: [41, 41],
-                    })
-                }),
-                opponent: (lat, lon) => L.marker([lat, lon], {
-                    icon: L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/ShadowPosition.png',
-                        iconSize: [41, 41],
-                    })
-                }),
-            };
-
-            // Add markers to the map
             jsonData.forEach(({ lat, lon }, i) => {
-                let marker;
-                if (isSpy) {
-                    marker = markerOptions.opponent(lat, lon);
-                } else {
-                    if (jData.length == 2) {
-                        marker = markerOptions.treasure(lat, lon);
-                    } else {
-                        marker = (i === 0) ? markerOptions.user(lat, lon) : markerOptions.treasure(lat, lon);
-                    }
-                }
-                marker.addTo(map).bindPopup(`Marker ${i + 1}: ${marker.options.icon.options.iconUrl}`);
+                const markerType = isSpy ? (i == 0 ? 'user' : 'opponent') : (jData.length === 2 ? 'treasure' : (i === 0 ? 'user' : 'treasure'));
+                const marker = createMarker(lat, lon, markerType);
+				
+				let distance = (
+					(
+						(
+							jsonData[0].lat-lat
+						)**2 + (
+							jsonData[0].lon-lon
+						)**2
+					)**0.5
+				) * 111.1 * 1000;
+				console.log(distance);
+                marker.addTo(map).bindPopup(`Lat: ${lat}<br/>Lon: ${lon}<br/>Distance: ${distance} m`);
             });
 
             // Adjust view to fit all markers
             const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
             map.fitBounds(bounds);
-
-            // Clear any existing info
-            document.querySelector('.leaflet-bottom.leaflet-right').innerHTML = "";
         } catch (error) {
             console.error('Error parsing data parameter:', error);
             alert('Invalid data format. Please provide valid coordinates.');
