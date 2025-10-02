@@ -101,11 +101,14 @@
 						)**2
 					)**0.5
 				) * 100 * 1000;
-                marker.addTo(map).bindPopup(`
-					Lat: ${lat}<br/>
-					Lon: ${lon}<br/>
-					Distance: ${distance.toFixed(3)} m
-				`);
+                marker.addTo(map);
+				if(i!=0) {
+					let popup = L.popup().setContent(`
+						<span style="font-weight:bold">Distance: </span><span style="color:red;font-weight:italic">${distance.toFixed(3)} m</span>
+					`);
+					marker.bindPopup(popup);
+				}
+				marker.on("click", () => map.setView([lat, lon], 20));
             });
 
             // Adjust view to fit all markers
