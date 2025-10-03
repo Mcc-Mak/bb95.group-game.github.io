@@ -143,8 +143,10 @@ center: [22.362891, 114.050456],
                 const touch1 = [e.touches[0].clientX, e.touches[0].clientY];
                 const touch2 = [e.touches[1].clientX, e.touches[1].clientY];
                 currentAngle = getAngle(touch1, touch2);
+                
+                // Calculate the change in angle
                 const rotation = currentAngle - startAngle;
-                map.setBearing(rotation); // Assuming you have a method to set bearing
+                map.setBearing(rotation); // Update the map bearing
             }
         });
 
