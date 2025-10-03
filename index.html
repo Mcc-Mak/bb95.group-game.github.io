@@ -114,6 +114,17 @@
             // Adjust view to fit all markers
             const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
             map.fitBounds(bounds);
+            
+            // Function to handle device orientation
+        function handleOrientation(event) {
+            const alpha = event.alpha; // Rotation around the Z-axis
+            if (alpha !== null) {
+                map.setBearing(-alpha); // Set the map bearing
+            }
+        }
+
+        // Listen for device orientation events
+        window.addEventListener('deviceorientation', handleOrientation);
         } catch (error) {
             console.error('Error parsing data parameter:', error);
             alert('Invalid data format. Please provide valid coordinates.');
