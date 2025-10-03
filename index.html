@@ -115,16 +115,38 @@
             const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
             map.fitBounds(bounds);
             
-            // Function to handle device orientation
-        function handleOrientation(event) {
-            const alpha = event.alpha; // Rotation around the Z-axis
-            if (alpha !== null) {
-                map.setBearing(-alpha); // Set the map bearing
-            }
+            let startAngle = 0;
+        let currentAngle = 0;
+
+        // Function to calculate the angle between two points
+        function getAngle(p1, p2) {
+            return Math.atan2(p2[1] - p1[1], p2[0] - p1[0]) * (180 / Math.PI);
         }
 
-        // Listen for device orientation events
-        window.addEventListener('deviceorientation', handleOrientation);
+        // Touch start event
+        map.on('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                const touch1 = [e.touches[0].clientX, e.touches[0].clientY];
+                const touch2 = [e.touches[1].clientX, e.touches[1].clientY];
+                startAngle = getAngle(touch1, touch2);
+            }
+        });
+
+        // Touch move event
+        map.on('touchmove', function(e) {
+            if (e.touches.length === 2) {
+                const touch1 = [e.touches[0].clientX, e.touches[0].clientY];
+                const touch2 = [e.touches[1].clientX, e.touches[1].clientY];
+                currentAngle = getAngle(touch1, touch2);
+                const rotation = currentAngle - startAngle;
+                map.setBearing(rotation); // Assuming you have a method to set bearing
+            }
+        });
+
+        // Touch end event
+        map.on('touchend', function() {
+            startAngle = currentAngle; // Update the start angle for the next gesture
+        });
         } catch (error) {
             console.error('Error parsing data parameter:', error);
             alert('Invalid data format. Please provide valid coordinates.');
