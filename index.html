@@ -119,41 +119,6 @@ center: [22.362891, 114.050456],
             // Adjust view to fit all markers
             const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
             map.fitBounds(bounds);
-            
-            let startAngle = 0;
-        let currentAngle = 0;
-
-        // Function to calculate the angle between two points
-        function getAngle(p1, p2) {
-            return Math.atan2(p2[1] - p1[1], p2[0] - p1[0]) * (180 / Math.PI);
-        }
-
-        // Touch start event
-        map.on('touchstart', function(e) {
-            if (e.touches.length === 2) {
-                const touch1 = [e.touches[0].clientX, e.touches[0].clientY];
-                const touch2 = [e.touches[1].clientX, e.touches[1].clientY];
-                startAngle = getAngle(touch1, touch2);
-            }
-        });
-
-        // Touch move event
-        map.on('touchmove', function(e) {
-            if (e.touches.length === 2) {
-                const touch1 = [e.touches[0].clientX, e.touches[0].clientY];
-                const touch2 = [e.touches[1].clientX, e.touches[1].clientY];
-                currentAngle = getAngle(touch1, touch2);
-                
-                // Calculate the change in angle
-                const rotation = currentAngle - startAngle;
-                map.setBearing(rotation); // Update the map bearing
-            }
-        });
-
-        // Touch end event
-        map.on('touchend', function() {
-            startAngle = currentAngle; // Update the start angle for the next gesture
-        });
         } catch (error) {
             console.error('Error parsing data parameter:', error);
             alert('Invalid data format. Please provide valid coordinates.');
