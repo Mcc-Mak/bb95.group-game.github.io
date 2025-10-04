@@ -30,6 +30,11 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+		$(document).ready(
+			() => {
+				$('.leaflet-control-attribution').html("");
+			}
+		);
         // Initialize the map
         const map = L.map('map', {
             center: [22.362891, 114.050456],
