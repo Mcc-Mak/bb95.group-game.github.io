@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,123 +11,125 @@
             margin: 0;
             font-family: Arial, sans-serif;
         }
+
         #map {
             height: 100vh;
             width: 100vw;
         }
+
         h1 {
             text-align: center;
             margin: 20px 0;
         }
     </style>
 </head>
+
 <body>
 
-<div id="map"></div>
+    <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-    // Initialize the map
-const map = L.map('map', {
-center: [22.362891, 114.050456],
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map', {
+            center: [22.362891, 114.050456],
             zoom: 14,
-            // Enable rotation
-            rotate: true
         });
 
-    // Function to get URL parameters
-    function getParameterByName(name) {
-        const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-        const results = regex.exec(window.location.href);
-        return results ? (results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : '') : null;
-    }
-
-    // Get parameters
-    const dataParam = getParameterByName('data');
-    const typeParam = getParameterByName('type');
-    const tileParam = getParameterByName('tile');
-    const isSpy = typeParam === 'spy'; 
-
-    // Tile layer selection
-    const tileOptions = {
-        cartocdn: {
-            url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-            maxZoom: 24,
-        },
-        osm: {
-            url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            maxZoom: 24,
-        },
-        default: {
-            url: "https://2.aerial.maps.ls.hereapi.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?app_id=eAdkWGYRoc4RfxVo0Z4B&app_code=TrLJuXVK62IQk0vuXFzaig&lg=eng",
-            maxZoom: 20,
+        // Function to get URL parameters
+        function getParameterByName(name) {
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+            const results = regex.exec(window.location.href);
+            return results ? (results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : '') : null;
         }
-    };
 
-    const selectedTile = tileOptions[tileParam] || tileOptions.default;
+        // Get parameters
+        const dataParam = getParameterByName('data');
+        const typeParam = getParameterByName('type');
+        const tileParam = getParameterByName('tile');
+        const isSpy = typeParam === 'spy';
 
-    // Add tile layer to the map
-    L.tileLayer(selectedTile.url, { maxZoom: selectedTile.maxZoom }).addTo(map);
-
-    // Function to create markers
-    const createMarker = (lat, lon, type) => {
-        const icons = {
-            treasure: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png',
-            user: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png',
-            opponent: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/ShadowPosition.png',
-        };
-        return L.marker([lat, lon], {
-            icon: L.icon({
-                iconUrl: icons[type],
-                iconSize: type === 'treasure' ? [30, 30] : [20, 20],
-            })
-        });
-    };
-
-    if (dataParam) {
-        try {
-            const jData = dataParam.split('@').map(Number);
-            if (jData.length % 2 !== 0) throw new Error("Invalid number of coordinates");
-
-            const jsonData = [];
-            for (let i = 0; i < jData.length; i += 2) {
-                jsonData.push({ lat: jData[i], lon: jData[i + 1] });
+        // Tile layer selection
+        const tileOptions = {
+            cartocdn: {
+                url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                maxZoom: 24,
+            },
+            osm: {
+                url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                maxZoom: 24,
+            },
+            default: {
+                url: "https://2.aerial.maps.ls.hereapi.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?app_id=eAdkWGYRoc4RfxVo0Z4B&app_code=TrLJuXVK62IQk0vuXFzaig&lg=eng",
+                maxZoom: 20,
             }
+        };
 
-            jsonData.forEach(({ lat, lon }, i) => {
-                const markerType = isSpy ? (i == 0 ? 'user' : 'opponent') : (jData.length === 2 ? 'treasure' : (i === 0 ? 'user' : 'treasure'));
-                const marker = createMarker(lat, lon, markerType);
-				
-				let distance = (
-					(
-						(
-							jsonData[0].lat-lat
-						)**2 + (
-							jsonData[0].lon-lon
-						)**2
-					)**0.5
-				) * 100 * 1000;
-                marker.addTo(map);
-				if(i!=0) {
-					let popup = L.popup().setContent(`
+        const selectedTile = tileOptions[tileParam] || tileOptions.default;
+
+        // Add tile layer to the map
+        L.tileLayer(selectedTile.url, { maxZoom: selectedTile.maxZoom }).addTo(map);
+
+        // Function to create markers
+        const createMarker = (lat, lon, type) => {
+            const icons = {
+                treasure: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png',
+                user: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png',
+                opponent: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/ShadowPosition.png',
+            };
+            return L.marker([lat, lon], {
+                icon: L.icon({
+                    iconUrl: icons[type],
+                    iconSize: type === 'treasure' ? [30, 30] : [20, 20],
+                })
+            });
+        };
+
+        if (dataParam) {
+            try {
+                const jData = dataParam.split('@').map(Number);
+                if (jData.length % 2 !== 0) throw new Error("Invalid number of coordinates");
+
+                const jsonData = [];
+                for (let i = 0; i < jData.length; i += 2) {
+                    jsonData.push({ lat: jData[i], lon: jData[i + 1] });
+                }
+
+                jsonData.forEach(({ lat, lon }, i) => {
+                    const markerType = isSpy ? (i == 0 ? 'user' : 'opponent') : (jData.length === 2 ? 'treasure' : (i === 0 ? 'user' : 'treasure'));
+                    const marker = createMarker(lat, lon, markerType);
+
+                    let distance = (
+                        (
+                            (
+                                jsonData[0].lat - lat
+                            ) ** 2 + (
+                                jsonData[0].lon - lon
+                            ) ** 2
+                        ) ** 0.5
+                    ) * 100 * 1000;
+                    marker.addTo(map);
+                    if (i != 0) {
+                        let popup = L.popup().setContent(`
 						<span style="font-weight:bold">Distance: </span><span style="color:red;font-weight:italic">${distance.toFixed(3)} m</span>
 					`);
-					marker.bindPopup(popup);
-				}
-				marker.on("click", () => map.setView([lat, lon], 20));
-            });
+                        marker.bindPopup(popup);
+                    }
+                    marker.on("click", () => map.setView([lat, lon], 20));
+                });
 
-            // Adjust view to fit all markers
-            const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
-            map.fitBounds(bounds);
-        } catch (error) {
-            console.error('Error parsing data parameter:', error);
-            alert('Invalid data format. Please provide valid coordinates.');
+                // Adjust view to fit all markers
+                const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
+                map.fitBounds(bounds);
+            } catch (error) {
+                console.error('Error parsing data parameter:', error);
+                alert('Invalid data format. Please provide valid coordinates.');
+            }
+        } else {
+            alert('No data parameter provided.');
         }
-    } else {
-        alert('No data parameter provided.');
-    }
-</script>
+    </script>
 
 </body>
+
 </html>
