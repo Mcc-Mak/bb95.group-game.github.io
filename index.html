@@ -30,11 +30,6 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-		$(document).ready(
-			() => {
-				$('.leaflet-control-attribution').html("");
-			}
-		);
         // Initialize the map
         const map = L.map('map', {
             center: [22.362891, 114.050456],
@@ -129,6 +124,7 @@
 				if (map.getZoom() < 15) {
 				    map.setZoom(15);
 				}
+				document.querySelector('.leaflet-control-attribution').innerHTML = "";
             } catch (error) {
                 console.error('Error parsing data parameter:', error);
                 alert('Invalid data format. Please provide valid coordinates.');
