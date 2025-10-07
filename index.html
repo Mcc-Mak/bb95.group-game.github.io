@@ -45,8 +45,9 @@
 
         // Get parameters
         const dataParam = getParameterByName('data');
-        const typeParam = getParameterByName('type');
-        const tileParam = getParameterByName('tile');
+        const typeParam = getParameterByName('type') || ''; // Make type optional
+        const tileParam = getParameterByName('tile') || "default";
+        const itemsParam = getParameterByName('items') || '';
         const isSpy = typeParam === 'spy';
 
         // Tile layer selection
@@ -71,16 +72,11 @@
         L.tileLayer(selectedTile.url, { maxZoom: selectedTile.maxZoom }).addTo(map);
 
         // Function to create markers
-        const createMarker = (lat, lon, type) => {
-            const icons = {
-                treasure: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png',
-                user: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png',
-                opponent: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/ShadowPosition.png',
-            };
+        const createMarker = (lat, lon, iconUrl) => {
             return L.marker([lat, lon], {
                 icon: L.icon({
-                    iconUrl: icons[type],
-                    iconSize: type === 'treasure' ? [30, 30] : [20, 20],
+                    iconUrl: iconUrl,
+                    iconSize: [30, 30],
                 })
             });
         };
@@ -95,24 +91,57 @@
                     jsonData.push({ lat: jData[i], lon: jData[i + 1] });
                 }
 
-                jsonData.forEach(({ lat, lon }, i) => {
-                    const markerType = isSpy ? (i == 0 ? 'user' : 'opponent') : (jData.length === 2 ? 'user' : (i === 0 ? 'user' : 'treasure'));
-                    const marker = createMarker(lat, lon, markerType);
+                let itemList = itemsParam ? itemsParam.split('@') : [];
+                const iconUrls = {
+                    user: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/UserPosition.png',
+                    treasure: (level) => `https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasureBox-Lv${level}.jpg`,
+                    key: 'https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/Key.png',
+					item: `https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/TreasurePosition.png`,
+					opponent: `https://raw.githubusercontent.com/Mcc-Mak/bb95.group-game.github.io/refs/heads/main/ShadowPosition.png`,
+                };
 
-                    let distance = (
-                        (
-                            (
-                                jsonData[0].lat - lat
-                            ) ** 2 + (
-                                jsonData[0].lon - lon
-                            ) ** 2
-                        ) ** 0.5
-                    ) * 100 * 1000;
+                jsonData.forEach(({ lat, lon }, i) => {
+                    let markerType, iconUrl;
+
+                    if (i === 0) {
+                        markerType = 'user';
+                        iconUrl = iconUrls.user;
+                    } else {
+                        markerType = 'treasure';
+						if(!isSpy) {
+							if(itemList.length > 0) {
+								if (itemList[i - 1] === "KEY_1") {
+									iconUrl = iconUrls.key;
+								} else if (itemList[i - 1] === "ITEM_1") {
+									iconUrl = iconUrls.treasure(1);
+								} else if (itemList[i - 1] === "ITEM_2") {
+									iconUrl = iconUrls.treasure(2);
+								}
+							} else {
+								iconUrl = iconUrls.item;
+							}
+						} else {
+							iconUrl = iconUrls.opponent;
+						}
+                    }
+					console.log(i, markerType, iconUrl, itemList)
+                    
+                    const marker = createMarker(lat, lon, iconUrl);
                     marker.addTo(map);
-                    if (i != 0) {
+
+                    if (i !== 0) {
+                        let distance = (
+                            (
+                                (
+                                    jsonData[0].lat - lat
+                                ) ** 2 + (
+                                    jsonData[0].lon - lon
+                                ) ** 2
+                            ) ** 0.5
+                        ) * 100 * 1000;
                         let popup = L.popup().setContent(`
-						<span style="font-weight:bold">Distance: </span><span style="color:red;font-weight:italic">${distance.toFixed(3)} m</span>
-					`);
+                            <span style="font-weight:bold">Distance: </span><span style="color:red;font-weight:italic">${distance.toFixed(3)} m</span>
+                        `);
                         marker.bindPopup(popup);
                     }
                     marker.on("click", () => map.setView([lat, lon], 20));
@@ -121,8 +150,8 @@
                 // Adjust view to fit all markers
                 const bounds = jsonData.map(({ lat, lon }) => [lat, lon]);
                 map.fitBounds(bounds);
-				map.invalidateSize();
-				document.querySelector('.leaflet-control-attribution').innerHTML = "";
+                map.invalidateSize();
+                document.querySelector('.leaflet-control-attribution').innerHTML = "";
             } catch (error) {
                 console.error('Error parsing data parameter:', error);
                 alert('Invalid data format. Please provide valid coordinates.');
