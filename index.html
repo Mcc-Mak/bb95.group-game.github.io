@@ -96,7 +96,7 @@
                 }
 
                 jsonData.forEach(({ lat, lon }, i) => {
-                    const markerType = isSpy ? (i == 0 ? 'user' : 'opponent') : (jData.length === 2 ? 'treasure' : (i === 0 ? 'user' : 'treasure'));
+                    const markerType = isSpy ? (i == 0 ? 'user' : 'opponent') : (jData.length === 2 ? 'user' : (i === 0 ? 'user' : 'treasure'));
                     const marker = createMarker(lat, lon, markerType);
 
                     let distance = (
