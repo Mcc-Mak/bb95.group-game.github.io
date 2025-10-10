@@ -58,12 +58,16 @@
             },
             osm: {
                 url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                maxZoom: 24,
+                maxZoom: 19,
             },
-            default: {
+            satellite: {
                 url: "https://2.aerial.maps.ls.hereapi.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?app_id=eAdkWGYRoc4RfxVo0Z4B&app_code=TrLJuXVK62IQk0vuXFzaig&lg=eng",
                 maxZoom: 20,
-            }
+            },
+			default: {
+                url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                maxZoom: 24,
+            },
         };
 
         const selectedTile = tileOptions[tileParam] || tileOptions.default;
@@ -124,7 +128,6 @@
 							iconUrl = iconUrls.opponent;
 						}
                     }
-					console.log(i, markerType, iconUrl, itemList)
                     
                     const marker = createMarker(lat, lon, iconUrl);
                     marker.addTo(map);
@@ -144,7 +147,7 @@
                         `);
                         marker.bindPopup(popup);
                     }
-                    marker.on("click", () => map.setView([lat, lon], 20));
+                    marker.on("click", () => map.setView([lat, lon], tileOptions[tile].maxZoom));
                 });
 
                 // Adjust view to fit all markers
